@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roleta da Elza - Feliz Dia da Mulher</title>
+    <!-- Tailwind CSS para Estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Biblioteca de Confetes -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .font-cursive {
+            font-family: 'Dancing Script', cursive;
+        }
+        #modalContent {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .canvas-container {
+            filter: drop-shadow(0 15px 25px rgba(219, 39, 119, 0.3));
+        }
+        /* Corações flutuantes no fundo */
+        .bg-hearts {
+            background-image: url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 24 24' fill='%23fbcfe8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+            background-size: 80px 80px;
+            background-repeat: repeat;
+            opacity: 0.4;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-50 via-rose-100 to-pink-200 min-h-screen flex flex-col items-center justify-start font-sans overflow-x-hidden relative pb-10">
+    
+    <div class="bg-hearts"></div>
+
+    <!-- Cabeçalho Romântico -->
+    <header class="text-center p-6 mt-4 w-full max-w-2xl bg-white/60 backdrop-blur-sm rounded-3xl shadow-sm border border-pink-100 mx-4 z-10">
+        <h1 class="font-cursive text-5xl md:text-6xl font-bold text-pink-600 drop-shadow-sm mb-2">
+            Feliz Dia da Mulher, Elza! 🌸
+        </h1>
+        <p class="text-pink-900 text-md md:text-lg font-medium leading-relaxed mt-4 px-2">
+            Meu amor, você é a mulher da minha vida. Preparei essa roleta especial para te mimar um pouquinho hoje, porque você merece o mundo inteiro (e muito mais)!
+        </p>
+        <p class="text-rose-600 font-bold mt-2 text-xl">O José te ama demais! ❤️</p>
+        
+        <!-- Contador de Tempo -->
+        <div class="mt-6 bg-pink-100/80 border border-pink-200 rounded-2xl p-4 shadow-inner">
+            <p class="text-sm text-pink-800 font-semibold mb-1 uppercase tracking-wider">Tempo que sou o homem mais feliz do mundo:</p>
+            <div id="timeCounter" class="text-xl md:text-2xl font-black text-pink-700 font-mono tracking-tight">
+                Carregando nosso tempo...
+            </div>
+            <p class="text-xs text-pink-600 mt-1">(Desde 08/01/2023)</p>
+        </div>
+    </header>
+
+    <!-- Container da Roleta -->
+    <main class="relative flex flex-col items-center mt-10 mb-8 z-10 w-full">
+        
+        <div class="relative w-80 h-80 md:w-96 md:h-96 canvas-container flex items-center justify-center">
+            
+            <!-- Marcador/Ponteiro -->
+            <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 z-20">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="filter drop-shadow-lg">
+                    <path d="M12 22L2 7C2 7 6 2 12 2C18 2 22 7 22 7L12 22Z" fill="#e11d48" stroke="#fff1f2" stroke-width="2"/>
+                </svg>
+            </div>
+
+            <!-- Canvas da Roleta -->
+            <canvas id="wheelCanvas" width="384" height="384" class="rounded-full bg-white border-[10px] border-rose-400 shadow-2xl"></canvas>
+            
+            <!-- Miolo da Roleta -->
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-rose-600 rounded-full border-4 border-white z-10 shadow-inner flex items-center justify-center">
+                <div class="text-white text-xl">❤️</div>
+            </div>
+        </div>
+
+        <!-- Botão de Girar -->
+        <button id="spinBtn" class="mt-12 px-10 py-4 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-bold rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 active:scale-95 text-xl tracking-wider uppercase border-2 border-white/50">
+            Girar Roleta do Amor!
+        </button>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="text-pink-800 font-medium text-sm text-center px-4 z-10 mt-auto">
+        Com todo o amor do mundo, do seu José. ✨
+    </footer>
+
+    <!-- Modal de Resultado -->
+    <div id="resultModal" class="hidden fixed inset-0 bg-pink-950/80 backdrop-blur-md flex items-center justify-center z-50">
+        <div class="bg-white p-8 md:p-10 rounded-[2rem] shadow-2xl text-center max-w-sm w-[90%] transform scale-75 opacity-0 border-4 border-pink-200" id="modalContent">
+            
+            <div class="text-7xl mb-4 animate-bounce" id="modalIcon">🎉</div>
+            <h2 class="font-cursive text-5xl font-bold text-rose-600 mb-2" id="modalTitle">Eba, Amor!</h2>
+            <p class="text-gray-600 mb-6 font-medium text-lg">O seu prêmio de hoje é:</p>
+            
+            <div class="text-2xl font-black text-rose-700 mb-8 bg-rose-50 border-2 border-rose-100 py-4 px-2 rounded-2xl shadow-sm" id="prizeText">
+                R$ 100 no PIX
+            </div>
+            
+            <button id="closeModalBtn" class="px-8 py-4 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-full shadow-md transition-all w-full text-lg uppercase tracking-wide">
+                Cobrar o José!
+            </button>
+        </div>
+    </div>
+
+    <!-- Script com a lógica do Jogo e Contador -->
+    <script>
+        // --- LÓGICA DO CONTADOR DE TEMPO ---
+        const startDate = new Date('2023-01-08T00:00:00');
+        const counterElement = document.getElementById('timeCounter');
+
+        function updateCounter() {
+            const now = new Date();
+            const diff = now - startDate;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            counterElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+        
+        setInterval(updateCounter, 1000);
+        updateCounter(); // Chamada inicial
+
+        // --- LÓGICA DA ROLETA ---
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const resultModal = document.getElementById('resultModal');
+        const modalContent = document.getElementById('modalContent');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const prizeText = document.getElementById('prizeText');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+
+        // Configuração dos Prêmios Especiais para a Elza
+        const segments = [
+            { text: "R$ 100 PIX", subtext: "Prêmio Máximo", color: "#FCD34D", textColor: "#92400E", icon: "💸" }, // Dourado
+            { text: "Jantar Romântico", subtext: "Eu pago", color: "#F472B6", textColor: "#FFFFFF", icon: "🍷" }, // Rosa claro
+            { text: "Massagem", subtext: "Do José", color: "#C084FC", textColor: "#FFFFFF", icon: "💆‍♀️" }, // Roxo
+            { text: "Cinema + Pipoca", subtext: "Você escolhe", color: "#FB7185", textColor: "#FFFFFF", icon: "🍿" }, // Rosa avermelhado
+            { text: "R$ 50 PIX", subtext: "Mimo", color: "#FDA4AF", textColor: "#881337", icon: "💰" }, // Rosa clarinho
+            { text: "Tente de Novo", subtext: "Quase!", color: "#E879F9", textColor: "#FFFFFF", icon: "🔄" }, // Fúcsia
+            { text: "Vale Presente", subtext: "Surpresa", color: "#F43F5E", textColor: "#FFFFFF", icon: "🎁" }, // Rose forte
+            { text: "Beijos Infinitos", subtext: "Amor", color: "#FBCFE8", textColor: "#9D174D", icon: "💋" }  // Rosa bebê
+        ];
+
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        // Desenhar a Roleta
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 5;
+            const arc = (2 * Math.PI) / segments.length;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < segments.length; i++) {
+                const angle = currentRotation + i * arc - arc / 2 - Math.PI / 2;
+
+                // Desenha a fatia (background)
+                ctx.beginPath();
+                ctx.fillStyle = segments[i].color;
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + arc, false);
+                ctx.fill();
+                
+                // Borda da fatia
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.stroke();
+
+                // Desenha o Texto
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + arc / 2);
+                
+                ctx.textAlign = "right";
+                ctx.fillStyle = segments[i].textColor;
+                
+                // Texto Principal
+                ctx.font = "bold 18px 'Poppins', sans-serif";
+                ctx.fillText(segments[i].text, radius - 40, 6);
+                
+                // Ícone
+                ctx.font = "26px sans-serif";
+                ctx.fillText(segments[i].icon, radius - 140, 10);
+
+                ctx.restore();
+            }
+        }
+
+        // Função de Suavização (Easing)
+        function easeOutQuart(t) {
+            return 1 - Math.pow(1 - t, 4);
+        }
+
+        // Lógica de Giro
+        function spin() {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            spinBtn.innerText = "Girando...";
+
+            const spinDuration = 5000;
+            const spinStart = performance.now();
+            const startRotation = currentRotation;
+            
+            const randomExtraSpins = (Math.PI * 2) * (5 + Math.random() * 5);
+            const randomStopAngle = Math.random() * Math.PI * 2;
+            const targetRotation = startRotation + randomExtraSpins + randomStopAngle;
+
+            function animate(currentTime) {
+                let elapsed = currentTime - spinStart;
+                if (elapsed > spinDuration) elapsed = spinDuration;
+
+                const progress = elapsed / spinDuration;
+                const ease = easeOutQuart(progress);
+
+                currentRotation = startRotation + (targetRotation - startRotation) * ease;
+                drawWheel();
+
+                if (elapsed < spinDuration) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isSpinning = false;
+                    spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    spinBtn.innerText = "Girar Novamente";
+                    showResult();
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // Exibir o Resultado
+        function showResult() {
+            const arc = (2 * Math.PI) / segments.length;
+            const normalizedRotation = currentRotation % (2 * Math.PI);
+            
+            const winningIndex = Math.floor((2 * Math.PI - normalizedRotation + arc / 2) / arc) % segments.length;
+            const winner = segments[winningIndex];
+
+            // Configura o Modal
+            prizeText.innerText = `${winner.icon} ${winner.text}`;
+            
+            if (winner.text === "Tente de Novo") {
+                modalTitle.innerText = "Ops, quase!";
+                modalTitle.classList.replace('text-rose-600', 'text-gray-500');
+                modalIcon.innerText = "🥺";
+                closeModalBtn.innerText = "Tentar de Novo Amor";
+            } else if (winner.text === "Beijos Infinitos") {
+                modalTitle.innerText = "Que sorte a minha!";
+                modalTitle.classList.replace('text-gray-500', 'text-rose-600');
+                modalIcon.innerText = "😘";
+                closeModalBtn.innerText = "Vem me dar!";
+                dispararConfetes();
+            } else {
+                modalTitle.innerText = "Eba, Amor! 💖";
+                modalTitle.classList.replace('text-gray-500', 'text-rose-600');
+                modalIcon.innerText = winner.icon;
+                closeModalBtn.innerText = "Cobrar o José!";
+                dispararConfetes();
+            }
+
+            // Exibe o Modal
+            resultModal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-75', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function dispararConfetes() {
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#e11d48', '#f472b6', '#ffffff']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#e11d48', '#f472b6', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-75', 'opacity-0');
+            setTimeout(() => {
+                resultModal.classList.add('hidden');
+            }, 300);
+        });
+
+        spinBtn.addEventListener('click', spin);
+        drawWheel();
+    </script>
+</body>
+</html>
+
